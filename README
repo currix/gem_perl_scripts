@@ -1,0 +1,12 @@
+These project is composed of perl scripts for system administration 
+developed in the CLGEM-UHU.
+
+--1-- rdiff-backup_user_accounts
+
+Script to launch an rdiff-backup process to a remote server to 
+backup the users accounts (or a series of directories). The script
+forks to a given number of processes to speed the transfer.
+
+Contains POD documentation that can be accessed with perldoc.
+
+by Currix TM.
