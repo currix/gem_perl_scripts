@@ -1,0 +1,247 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+#
+# UTF ENCODING
+use utf8;
+use open ':std', ':encoding(utf-8)';
+# Options
+use Getopt::Std;
+my %options;
+getopts("hvsCn:S:o:",\%options);
+#
+(my $prgname) = $0 =~ m#.*/(.+$)#;
+#
+my $usemessage = <<"EOF";
+
+ Usage: $prgname [-v] [-s] [-C] [-n number_of_tags] [-S cvs_separator_character] [-o output_file_name]  filename.csv
+        $prgname -h
+
+ Options:
+          h : displays help message
+          v : increase verbosity
+          s : skip first line
+          C : capitalize name, surname, and country
+          n : number of tags per page. [DEFAULT VALUE 12]
+          S : CVS fields separation character. [DEFAULT VALUE ";"]
+          o : output filename. [DEFAULT VALUE "csv2latex.tex]
+
+EOF
+#
+#
+die "\tPerl script to transform a csv file of users to an address list in LaTeX.\n
+     by Currix TM\n\n$usemessage" if ($options{"h"} || not @ARGV);
+################################################################################
+#
+# Options
+my $num_tags;
+if ($options{"n"}) {
+  $num_tags = $options{"n"};
+} else {
+  $num_tags = 12;
+}
+#
+my $output_file_name;
+if ($options{"o"}) {
+  $output_file_name = $options{"o"};
+} else {
+  $output_file_name = "csv2latex.tex";
+}
+#
+my $cvs_sep;
+if ($options{"S"}) {
+  $cvs_sep = $options{"S"};
+} else {
+  $cvs_sep = ";";
+}
+################################################################################
+# LaTeX File Header Content
+my $latex_header = <<'EOF';
+%%
+%% This is file `template-6s.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% template.raw  (with options: `6s')
+%% 
+%% Template for the LaTeX class aipproc.
+%% 
+%% (C) 1998,2000,2001 American Institute of Physics and Frank Mittelbach
+%% All rights reserved
+%% 
+%%
+%% $Id: template.raw,v 1.12 2005/07/06 19:22:14 frank Exp $
+%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Please remove the next line of code if you
+%% are satisfied that your installation is
+%% complete and working.
+%%
+%% It is only there to help you in detecting
+%% potential problems.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\input{aipcheck}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% SELECT THE LAYOUT
+%%
+%% The class supports further options.
+%% See aipguide.pdf for details.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[
+    ,final            % use final for the camera ready runs
+%%  ,draft            % use draft while you are working on the paper
+%%  ,numberedheadings % uncomment this option for numbered sections
+%%  ,                 % add further options here if necessary
+  ]
+%  {aipproc}
+  {article}
+
+%\layoutstyle{6x9}
+\usepackage[utf8]{inputenc}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% FRONTMATTER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title{List of participants}
+
+
+%\classification{}
+%\keywords      {}
+
+%\author{}{
+%  address={}
+%}
+
+\maketitle
+
+\begin{tabular}[l]{lcl}
+EOF
+#
+# LaTeX File Footer Content
+my $latex_footer = <<'EOF';
+\end{tabular}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
+EOF
+#
+# Table of labels row structure 
+my $table_line = <<'EOF';
+  \begin{tabular}{p{6.5cm}} 
+    \\
+    SURNAME1, NAME1\\
+    EMAIL1\\
+    ADDR1\\
+    COUNTRY1
+  \end{tabular}& ~~~ &
+   %  \hspace{-1.5cm}
+  \begin{tabular}{p{6.5cm}} 
+    \\
+    SURNAME2, NAME2\\
+    EMAIL2\\
+    ADDR2\\
+    COUNTRY2
+  \end{tabular}\\
+EOF
+#
+#
+################################################################################
+# Main program body
+my $latex_body;
+my ($surname, $name, $email, $address, $country);
+# open input file
+my $input_file_name = shift @ARGV;
+open ADDRESSES, "<$input_file_name" or die "Cannot open $input_file_name\n";
+#
+# Skip first line
+if ($options{"s"}) {
+  my $first_line = <ADDRESSES>;
+}
+#
+my $p = 0;
+my $iflag_end = 0;
+#
+while (1) {
+  # 1st participant
+  &read_participant;
+  print "iflag $iflag_end\n" if ($options{"v"});
+  last if ($iflag_end);
+  print "$surname, $name\t$email\t$address\t$country\n" if ($options{"v"});
+  $p++;
+  # Capitaliza
+  my $line_of_list = $table_line;
+  $line_of_list =~ s/SURNAME1/$surname/;
+  $line_of_list =~ s/NAME1/$name/;
+  $line_of_list =~ s/EMAIL1/$email/;
+  $line_of_list =~ s/ADDR1/$address/;
+  $line_of_list =~ s/COUNTRY1/$country/;
+  #
+  # 2nd participant
+  &read_participant;
+  print "iflag $iflag_end\n" if ($options{"v"});
+  last if ($iflag_end);
+  print "$surname, $name\t$email\t$address\t$country\n" if ($options{"v"});
+  $p++;
+  $line_of_list =~ s/SURNAME2/$surname/;
+  $line_of_list =~ s/NAME2/$name/;
+  $line_of_list =~ s/EMAIL2/$email/;
+  $line_of_list =~ s/ADDR2/$address/;
+  $line_of_list =~ s/COUNTRY2/$country/;
+  #
+  #
+  $latex_body .= "$line_of_list\n";
+  ###
+  ### Break tabular for new page
+  if ($p % $num_tags == 0) {
+    $latex_body .="\\end{tabular}\n\\begin{tabular}[l]{lcl}"
+  }
+  #
+}
+print "Participants read :: $p\n" if ($options{"v"});
+###
+open TEXFILE, ">$output_file_name" or die "Cannot open $output_file_name\n";
+###
+print TEXFILE "$latex_header\n$latex_body\n$latex_footer\n";
+###
+close TEXFILE;
+#
+print "Sayonara Baby...\n" if ($options{"v"});
+#
+#
+sub read_participant {
+  # Check last line
+  if (eof(ADDRESSES)) {
+    $iflag_end = 1;
+    return;
+  }
+  # Read line
+  chomp(my $line = <ADDRESSES>);
+  # Slice that assume a given order in the csv file:
+  # index    field
+  #   1       name
+  #   2      surname
+  #   3       email
+  #   5      country
+  #   6      address
+  ($surname, $name, $email, $address, $country) = (split ";", $line)[2,1,3,6,5];
+  #
+  # Capitalize
+  if ($options{"C"}) {
+    $name = uc $name;
+    $surname = uc $surname;
+    $country = uc $country;
+  }
+  # Escape low hyphen (dashes)
+  $email =~ s/_/\\_/g;
+}

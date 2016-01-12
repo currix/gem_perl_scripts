@@ -1,12 +1,30 @@
-These project is composed of perl scripts for system administration 
-developed in the CLGEM-UHU.
+This project is composed of perl scripts for system administration and
+other tasks developed in the CLGEM-UHU.
 
 --1-- rdiff-backup_user_accounts
 
 Script to launch an rdiff-backup process to a remote server to 
-backup the users accounts (or a series of directories). The script
+backup the users accounts (or a given series of directories). The script
 forks to a given number of processes to speed the transfer.
 
 Contains POD documentation that can be accessed with perldoc.
+
+--2-- generate_address_list
+
+A script that reads a csv list of participants in a meeting with
+several fields and prepare a LaTeX output of tags indicating name,
+email, postal address, and country.
+
+The columns in the example given (test.csv, with ";" separators) are
+
+  # index    field
+  #   1       name
+  #   2      surname
+  #   3       email
+  #   5      country
+  #   6      address
+
+This can be easily changed in the subroutine read_participant.
+
 
 by Currix TM.
