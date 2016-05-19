@@ -1,0 +1,260 @@
+#!/usr/bin/perl
+#
+# Perl script to 
+#
+# by Currix TM
+#
+use strict;
+use warnings;
+#
+use Getopt::Std;
+# Switches:
+my %options;
+getopts("hv",\%options);
+###
+(my $prgname) = $0 =~ m#.*/(.+$)#;
+###
+my $usemessage = <<"EOF";
+
+ Usage: $prgname [-hv] min_year max_year filename
+
+ Options:
+          h : help message
+          v : debugging output
+
+
+EOF
+###
+my $latex_article_entry = <<'EOF';
+\hline
+\multicolumn{2}{|l|}{\textbf{\arabic{pub_rev}.}\stepcounter{pub_rev}} \\
+\hline
+\textbf{Autores (p.o. de firma):} &  \parbox[t]{0.77\linewidth}{AUTHORS} \\
+\hline
+\textbf{Título del artículo:} &  \parbox[t]{0.77\linewidth}{TITLE} \\
+\hline
+\textbf{Revista (abreviada):} &  \parbox[t]{0.77\linewidth}{JOURNAL} \\
+\hline
+\textbf{Año:} & YEAR \\
+\hline
+\textbf{Volumen:} & VOLUME \\
+\hline
+\textbf{Páginas (inicial-final):} & PAGES \\
+EOF
+###
+my $latex_other_entry = <<'EOF';
+\hline
+\multicolumn{2}{|l|}{\arabic{pub_lib}.\stepcounter{pub_lib}} \\
+\hline
+\textbf{Autores (p.o. de firma):} & AUTHORS \\
+\hline
+\textbf{Tipo (Libro, capítulo...):} & TYPE \\
+\hline
+\textbf{Título libro:} & TITLE \\
+\hline
+\textbf{Título capítulo (en su caso):} & Tit_Chap \\
+\hline
+\textbf{ISBN:} & IISSBBNN \\
+\hline
+\textbf{Editorial, ciudad:} & EDCITY \\
+\hline
+\textbf{Año:} & YEAR \\
+\hline
+\textbf{Páginas (inicial-final):} & PAGES \\
+\hline
+\textbf{Evidencia de calidad (opcional):} & QUAL \\
+EOF
+##
+die "\tPerl script to sort the list of bibtex publications from Endnote in file filename from min_year to max_year\n
+     by Currix TM\n\n$usemessage" if ($options{"h"});
+###
+my ($min_year, $max_year, $filename);
+if ($#ARGV < 2 ) {
+  die "$usemessage\n\tNeeds arguments  min_year, max_year, and filename.\n\n";
+} else {
+  # Assign arguments to variables...
+  ($min_year, $max_year, $filename) = @ARGV;
+}
+###
+my @articles;
+my @others;
+### Open bibtex file
+open(BIBFILE, "<$filename") or die "Cannot open file $filename...\n";
+###
+my $ident_art;
+my $number_arts = 0;		# Counter and Key for articles
+my $ident_other;
+my $number_others = 0;		# Counter and Key for others
+#
+my $field_id;			# Field identifier
+###
+while (<BIBFILE>) {
+  ###
+  chomp;
+  #
+  # skip empty lines
+  next if (/^\s*$/);
+  ##########
+  ## Headers
+  ##########
+  if (/^PT\s+J/) {
+    # Article case
+    $ident_art = 1;
+    $number_arts++;
+    print "Article $number_arts starts here...\n" if ($options{"v"});
+    next;
+  } elsif (/^PT\s+\w/) {
+    # Other case
+    $ident_other = $1;
+    $number_others++;
+    print "Other $number_others starts here...\n" if ($options{"v"});
+    next
+  }
+  ###########
+  ## EOR case
+  ###########
+  if (/^ER\s*$/) {
+    print "Record ends here...\n" if ($options{"v"});
+    $ident_art = 0;
+    $ident_other = 0;
+    next;
+  }
+  ################
+  ## Entry reading
+  ###############
+  if ($ident_art) {
+    print "Reading article $number_arts\n" if ($options{"v"});
+    &read_items(\%{$articles[$number_arts-1]}, $_);
+  } elsif ($ident_other) {
+    print "Reading other $number_others\n" if ($options{"v"});
+    &read_items(\%{$others[$number_others-1]}, "other", $_);
+  }
+}
+#
+print "A total of $number_arts articles and $number_others others have been processed.\n" if ($options{"v"});
+###
+# Article Output
+###
+# Remove articles not in the requested period
+my @articles_timespan = grep {(${$articles[$_]}{"PY"}<= $max_year) & (${$articles[$_]}{"PY"} >= $min_year)} (0..$number_arts-1);
+#
+# Sort articles according to publication year
+my @articles_sorted = sort {${$articles[$a]}{"PY"} <= ${$articles[$b]}{"PY"}} @articles_timespan;
+#
+# Prepare LaTeX Output
+print "%%%%%%%%%%%%%%%%%%%%%%%% Articles %%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
+foreach my $index (@articles_sorted) {
+  print "Processing article $index\n" if ($options{"v"});
+  my $output = &prepare_article_entry(\%{$articles[$index]});
+  print "$output";
+}
+# ###
+# # Others Output
+# ###
+# # Remove items not in the requested period
+# my @others_timespan = grep {(${$others[$_]}{"PY"}<= $max_year) & (${$others[$_]}{"PY"} >= $min_year)} (0..$number_arts-1);
+# #
+# # Sort items according to publication year
+# my @others_sorted = sort {${$others[$a]}{"PY"} <= ${$others[$b]}{"PY"}} @others_timespan;
+# #
+# # Prepare LaTeX Output
+# print "%%%%%%%%%%%%%%%%%%%%%%%% Others %%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
+# foreach my $index (@others_sorted) {
+#   print "Processing item $index\n" if ($options{"v"});
+#   #  my $output = &prepare_other_entry(\%{$others[$index]});
+#   #  print "$output";
+# }
+#################################
+sub read_items {
+  #
+  my ($hash_ref, $line) = @_;
+  #
+  if ($line =~ /^(\w+)\s+(.*)$/) { # Check if there is a field identifier
+    $field_id = $1;
+    if ($field_id eq "AU") { # Reverse the entry and remove the comma for authors
+      # Reverse name
+      my @name = split /,/, $2;
+      print "field $1 --> content $name[1] $name[0]\n" if ($options{"v"});
+      ${$hash_ref}{$field_id} = "$name[1] $name[0]";
+    } else {
+      ${$hash_ref}{$field_id} = $2;
+      print "field $1 --> content $2\n" if ($options{"v"});
+    }
+  } elsif (/^\s+(.*)$/) { # No field id present
+    if ($field_id eq "AU") { # Reverse the entry and remove the comma for authors
+      # Reverse name and append
+      my @name = split /,/, $1;
+      print "field $field_id --> content $name[1] $name[0]\n" if ($options{"v"});
+      ${$hash_ref}{$field_id} .= "%% "."$name[1] $name[0]";
+    } else {
+      # Append the entry
+      ${$hash_ref}{$field_id} .= "%% ".$1;
+    }
+  } else { # Ay ay....
+    warn "I should not be here... Ay mai...\n";
+  }
+}
+##################################
+sub prepare_article_entry {
+  my $hash_ref = shift;
+  my $LaTeX_output =  $latex_article_entry;
+  # Authors
+  my $authors = ${$hash_ref}{"AU"};
+  $authors =~ s/%%/,/g;
+  $LaTeX_output =~ s/AUTHORS/$authors/;
+  # Title
+  my $title = ${$hash_ref}{"TI"};
+  $title =~ s/%%//g;
+  $LaTeX_output =~ s/TITLE/$title/;
+  # Journal
+  my $journal = ${$hash_ref}{"SO"};
+  $journal =~ s/%%//g;
+  $LaTeX_output =~ s/JOURNAL/$journal/;
+  # Año
+  my $year = ${$hash_ref}{"PY"};
+  $LaTeX_output =~ s/YEAR/$year/;
+  # Volumen
+  my $volume = ${$hash_ref}{"VL"};
+  $LaTeX_output =~ s/VOLUME/$volume/;
+  # Pages
+  if (${$hash_ref}{"AR"}) {
+    my $article_code = ${$hash_ref}{"AR"};
+    $LaTeX_output =~ s/PAGES/$article_code/;
+  } else {
+    my $pages = ${$hash_ref}{"BP"}."-".${$hash_ref}{"EP"};
+    $LaTeX_output =~ s/PAGES/$pages/;
+  }
+  return $LaTeX_output;
+}
+##################################
+sub prepare_other_entry {
+  my $hash_ref = shift;
+  my $LaTeX_output =  $latex_article_entry;
+  # Authors
+  my $authors = ${$hash_ref}{"AU"};
+  $authors =~ s/%%/,/g;
+  $LaTeX_output =~ s/AUTHORS/$authors/;
+  # Title
+  my $title = ${$hash_ref}{"TI"};
+  $title =~ s/%%//g;
+  $LaTeX_output =~ s/TITLE/$title/;
+  # Journal
+  my $journal = ${$hash_ref}{"SO"};
+  $journal =~ s/%%//g;
+  $LaTeX_output =~ s/JOURNAL/$journal/;
+  # Año
+  my $year = ${$hash_ref}{"PY"};
+  $LaTeX_output =~ s/YEAR/$year/;
+  # Volumen
+  my $volume = ${$hash_ref}{"VL"};
+  $LaTeX_output =~ s/VOLUME/$volume/;
+  # Pages
+  if (${$hash_ref}{"AR"}) {
+    my $article_code = ${$hash_ref}{"AR"};
+    $LaTeX_output =~ s/PAGES/$article_code/;
+  } else {
+    my $pages = ${$hash_ref}{"BP"}."-".${$hash_ref}{"EP"};
+    $LaTeX_output =~ s/PAGES/$pages/;
+  }
+  return $LaTeX_output;
+}

@@ -9,9 +9,10 @@ forks to a given number of processes to speed the transfer.
 
 Contains POD documentation that can be accessed with perldoc.
 
+
 --2-- generate_address_list
 
-A script that reads a csv list of participants in a meeting with
+Script that reads a csv list of participants in a meeting with
 several fields and prepare a LaTeX output of tags indicating name,
 email, postal address, and country.
 
@@ -25,6 +26,13 @@ The columns in the example given (test.csv, with ";" separators) are
   #   6      address
 
 This can be easily changed in the subroutine read_participant.
+
+
+--3-- script_WoS_UHU_eval
+
+Script that takes as an input two years and an ASCII list of results
+of a search in Web of Science and sentd to the standard output the
+journal article results in LaTeX using a format required in UHU.
 
 
 by Currix TM.
