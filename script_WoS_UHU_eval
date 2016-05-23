@@ -39,7 +39,7 @@ my $latex_article_entry = <<'EOF';
 \hline
 \textbf{Volumen:} & VOLUME \\
 \hline
-\textbf{Páginas (inicial-final):} & PAGES \\
+\textbf{Páginas (inicial-final):} & PAGES \hfill\begin{tabular}{|l|l}\textbf{Citas:} & CIT\end{tabular}\\
 EOF
 ###
 my $latex_other_entry = <<'EOF';
@@ -224,6 +224,9 @@ sub prepare_article_entry {
     my $pages = ${$hash_ref}{"BP"}."-".${$hash_ref}{"EP"};
     $LaTeX_output =~ s/PAGES/$pages/;
   }
+  # Times Cited
+  my $times_cited =  ${$hash_ref}{"TC"};
+  $LaTeX_output =~ s/CIT/$times_cited/;
   return $LaTeX_output;
 }
 ##################################
