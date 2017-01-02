@@ -31,8 +31,8 @@ This can be easily changed in the subroutine read_participant.
 --3-- script_WoS_UHU_eval
 
 Script that takes as an input two years and an ASCII list of results
-of a search in Web of Science and sentd to the standard output the
-journal article results in LaTeX using a format required in UHU.
+of a search in Web of Science and send to the standard output the
+results sorted by years and times cited in LaTeX using a format required in UHU.
 
 
 by Currix TM.
