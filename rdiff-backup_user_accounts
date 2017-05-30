@@ -13,7 +13,8 @@ use Getopt::Std;
 #
 use Mail::Mailer; # Warning if remote directory is not accessible
 #
-my $prginfo = '$Id: rdiff-backup_user_accounts,v 1.19 2014/01/09 18:48:26 curro Exp curro $'; # switched to git at Jan 09 2014
+#my $prginfo = 'rdiff-backup_user_accounts,v 1.19 2014/01/09 18:48:26 curro Exp curro $'; # switched to git at Jan 09 2014
+my $prginfo = 'rdiff-backup_user_accounts ';
 # Switches:
 my %options;
 getopts("vhlsu:C:P:R:T:M:",\%options);
@@ -207,8 +208,8 @@ while (1) {
 	  # remove older than $days_last_copy files forced by user 
 	  exec "rdiff-backup --force --remove-older-than $days_last_copy $savedirname";
 	} else {
-	  # remove every 30th changes older than $days_last_copy to avoid overgrowth
-	  exec "rdiff-backup --force --remove-older-than $days_last_copy $savedirname" if ($day == 30);
+	  # remove every 30th changes older than $days_last_copy to avoid overgrowth and then update
+	  exec "rdiff-backup --force --remove-older-than $days_last_copy $savedirname; rdiff-backup --max-file-size $max_size $options_rdiff $origdirname $savedirname" if ($day == 30);
 	}
 	#
         # update
