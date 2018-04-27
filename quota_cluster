@@ -1,0 +1,115 @@
+#!/usr/bin/perl
+#
+# Perl script to fix and display the quota limits of cluster users
+#
+# by Currix TM
+#
+#use strict;
+use warnings;
+#
+use Getopt::Std;
+use Quota;
+#
+(my $prgname) = $0 =~ m#.*/(.+$)#;
+#
+# Switches
+my %options;
+getopts("u:f:s:h:dHVv", \%options);
+#
+my $version = '$Id: quota_CL,v 1.2 2013/08/17 21:58:26 curro Exp $';
+#
+my $usemessage = <<"EOF";
+
+    USAGE:
+    $prgname [-v] -u <uid> [-d] -f <filesystem> -s <softquota> -h <hard quota>
+    $prgname [-v] -u <uid> -f <filesystem> -d
+    $prgname -H
+    $prgname -V
+
+    OPTIONS:
+    u : act on user uid (uid number or username) (-u all -> all users).
+    f : filesystem with quota enabled.
+    d : display repquota output.
+    s : set softquota limit.
+    h : set hardquota limit.
+    H : display help message and exit.
+    V : print version info and exit.
+    v : increase verbosity.
+
+EOF
+#
+die "\tPerl script to display and alter the user's quota of CLGEM.\n
+     by Currix TM\n\tVERSION:\n\t$version\n\n$usemessage" if ($options{'H'});
+#
+die "\t$version\n" if ($options{'V'});
+#
+die "\n\tSyntax error :\n$usemessage" unless ($options{'f'});
+#
+my ($user_uid,$file_system,$soft_lim,$hard_lim);
+#
+# Extract user UID
+if ($options{'u'} ne "all") {
+  $user_uid = getpwnam($options{'u'}) or die "Incorrect username $options{'u'}";
+}
+#
+print "User id UID = $user_uid\n" if ($options{'u'} ne 'all' and $options{'v'});
+#
+# Extract quota filesystem device name
+$file_system = Quota::getqcarg($options{'f'}) or die "Incorrect filesystem name $options{'f'}:$!\n";
+#
+print "Filesystem device = $file_system\n" if ($options{'v'});
+#
+# Soft and hard limit values
+$soft_lim = $options{'s'} if ($options{'s'});
+$hard_lim = $options{'h'} if ($options{'h'});
+#
+# Check soft and hard limit input values
+die "Soft limit $soft_lim not valid.\n" if ($options{'s'} and not $soft_lim =~ /\d+/);
+die "Hard limit $hard_lim not valid.\n" if ($options{'h'} and not $hard_lim =~ /\d+/);
+#
+# Set limits
+if  ($options{'s'} or $options{'h'}) {
+  # username list from quota output for all option
+  my @output;
+  if ($options{'u'} eq "all") {
+    # Working for all users
+    @output = `repquota $file_system`;
+    foreach (@output) {
+      my @line = split;
+      my $username = $line[0] if ($line[0]);
+      print "Working with user $username\n" if ($options{'v'} and $line[0]);
+      my $uid = getpwnam($username);
+      my ($bc,$bs,$bh,$bt,$ic,$is,$ih,$it) = Quota::query($file_system, $uid);
+      print " Quota::query output = ($bc,$bs,$bh,$bt,$ic,$is,$ih,$it)\n" if ($options{'v'});
+      # Set limits (tlo = 0, kind = 0)
+      $bs = $soft_lim if  ($options{'s'});
+      $bh = $hard_lim if  ($options{'h'});
+      Quota::setqlim($file_system, $user_uid, $bs, $bh, $is, $ih, 0, 0);
+    }
+  } else {
+    # Single user case
+    print "Working with user $options{'u'} UID $user_uid\n" if ($options{'v'});
+    my ($bc,$bs,$bh,$bt,$ic,$is,$ih,$it) = Quota::query($file_system, $user_uid);
+    print " Quota::query output = ($bc,$bs,$bh,$bt,$ic,$is,$ih,$it)\n" if ($options{'v'});
+    # Set limits (tlo = 0, kind = 0)
+    $bs = $soft_lim if  ($options{'s'});
+    $bh = $hard_lim if  ($options{'h'});
+    Quota::setqlim($file_system, $user_uid, $bs, $bh, $is, $ih, 0, 0);
+  }
+}
+#
+# Display info
+#
+if  ($options{'d'}) {
+  #
+  my @output;
+  if ($options{'u'} eq 'all') {
+    @output = `repquota -s -t $file_system`;
+  } else {
+    @output = `repquota -s $file_system`;
+    my @line = grep {$_ =~ /$options{'u'}/} @output;
+    @output = (@output[0..4],@line);
+  }
+  #
+  print @output;
+}
