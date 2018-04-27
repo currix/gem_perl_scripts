@@ -1,0 +1,21 @@
+This project is composed of several branches with perl scripts for
+system administration and other tasks developed in the CLGEM-UHU.
+
+generate_address_list
+
+Script that reads a csv list of participants in a meeting with
+several fields and prepare a LaTeX output of tags indicating name,
+email, postal address, and country.
+
+The columns in the example given (test.csv, with ";" separators) are
+
+  # index    field
+  #   1       name
+  #   2      surname
+  #   3       email
+  #   5      country
+  #   6      address
+
+This can be easily changed in the subroutine read_participant.
+
+by Currix TM.
