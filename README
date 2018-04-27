@@ -1,0 +1,12 @@
+This project is composed of several branches with perl scripts for
+system administration and other tasks developed in the CLGEM-UHU.
+
+
+script_WoS_UHU_eval
+
+Script that takes as an input two years and an ASCII list of results
+of a search in Web of Science and send to the standard output the
+results sorted by years and times cited in LaTeX using a format required in UHU.
+
+
+by Currix TM.
