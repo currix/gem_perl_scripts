@@ -1,0 +1,363 @@
+#!/usr/bin/perl
+#
+# Perl script to backup with rdiff-backup the CLGEM user accounts
+# ###################### Needs to redo the calling for -l case? or -l -u?
+# by Currix TM
+#
+use strict;
+use warnings;
+#
+use POSIX qw(WNOHANG);
+#
+use Getopt::Std;
+#
+use Mail::Mailer; # Warning if remote directory is not accessible
+#
+#my $prginfo = 'rdiff-backup_user_accounts,v 1.19 2014/01/09 18:48:26 curro Exp curro $'; # switched to git at Jan 09 2014
+my $prginfo = 'rdiff-backup_user_accounts ';
+# Switches:
+my %options;
+getopts("vhlsu:C:P:R:T:M:",\%options);
+#
+(my $prgname) = $0 =~ m#.*/(.+$)#;
+#
+my $usemessage = <<"EOF";
+
+ Usage: $prgname [-vlsh] [-u username] [-C ncpus] [-T daysD] [-M size] -P path -R server_IP backupdir
+        $prgname -h
+
+ Options:
+          h : displays help message
+          u : apply only to user username
+          l : list increments
+          s : list increment sizes
+          v : increase verbosity
+          P : give remote server PATH
+          R : give remote server IP
+          C : number of cpus [DEFAULT VALUE ncpus = 4]
+          T : days for older changes kept  [DEFAULT VALUE days = 400D]
+          M : maximum size  in bytes of files copied [DEFAULT VALUE size = 350000000 (350MB)]
+
+EOF
+#
+die "\tPerl script to launch an rdiff-backup of cluster user accounts. Multiprocessor version.\n
+     by Currix TM\n\nRCSINFO: $prginfo\n\n$usemessage" if ($options{"h"});
+#
+# Check backup dir argument
+# Backup paths
+# Directory to be backed up
+my $backupdir;
+if (@ARGV) {
+  $backupdir = $ARGV[0];
+  print "Directory to backup :: $backupdir\n" if ($options{"v"});
+  die "\tLocal directory $backupdir doesn't exist.\n" unless (-d $backupdir);
+} else {
+  die "\t backup directory argument missing.\n";
+}
+#
+# Remote server IP
+my $remote_server;
+if ($options{"R"}) {
+  $remote_server = $options{"R"};
+} else {
+  die "\n\tRemote server option is not provided (-R).\n\n$usemessage";
+}
+print "Remote backup server :: $remote_server\n" if ($options{"v"});
+#
+# Directory where backups are saved
+my $savebackupdir;
+if ($options{"P"}) {
+  $savebackupdir = $options{"P"};
+} else {
+  die "\n\tRemote backup folder option is not provided (-P).\n\n$usemessage";
+}
+print "Remote backup folder :: $savebackupdir\n" if ($options{"v"});
+#
+##############################################################
+##############################################################
+#
+# Default values (Change values only in this section)
+#
+# Excluded directories
+my @excluded = ("guest","lost+found");
+#
+# Keep last 400 Days changes
+my $days_last_copy = "400D";
+if ($options{"T"}) {
+  if ($options{"T"} =~ /^\d+D$/) {
+    $days_last_copy = $options{"T"};
+  } else {
+    die "ERROR: \t-T $options{\"T\"} not a valid time format: format numberD (e.g. 100D).\n";
+  }
+}
+#
+# Number of cpus used (default value)
+my $cpus = 4;
+$cpus = $options{"C"} if ($options{"C"});
+#
+# Maximum size of files backed up (in bytes)
+my $max_size = 350000000; # 350 MB
+$max_size = $options{"M"} if ($options{"M"});
+#
+##############################################################
+##############################################################
+#
+# today timestamp
+my ($sec,$min,$hour,$day,$month,$year) = (localtime time)[0,1,2,3,4,5];
+#
+$year += 1900;
+$month++;
+#
+my $timestamp = $year." / ".$month." / ".$day." at ".$hour.":".$min.":".$sec."\n";
+#
+##############################################################
+# Check if the remote server and hard disk are available
+unless (!system "ssh", $remote_server, "cd $savebackupdir") {
+  # Remote directory not accessible
+  my $body = "WARNING :: ${hour}h ${min}m $day/$month/$year :: rdiff-backup_users_accounts cannot access remote directory.";
+  my $from_address = "root_GEM";
+  my $subject = "rdiff-backup_users_accounts error";
+  my $mailer = Mail::Mailer->new("sendmail");
+  $mailer->open({ From    => $from_address,
+                  To      => ['franpebe@gmail.com', 'jegramos@gmail.com'],
+                  Subject => $subject,
+                })
+    or die "Can't open: $!\n";
+  print $mailer $body;
+  $mailer->close();
+  die "ERROR: \tRemote server is offline or remote backup directory is not mounted."
+}
+#
+##############################################################
+#
+my $pproc = $$; # Parent process ID number
+#
+print "Script launched on $timestamp\n" if ($options{"v"});
+#
+# chdir to the saved directory
+chdir "$backupdir" or die "cannot chdir to $backupdir: $!";
+#
+#
+my @backup_dirs;
+if ($options{"u"}) {
+  # single user case
+  push(@backup_dirs, $options{"u"});
+  $cpus = 1;                    # Only one CPU needed
+} else {
+  # general case
+  # directory list
+  my @backup_dirs_temp = grep {-d $_  } glob ("*"); # Excluding files
+  #
+  # removing excluded directories
+  my %seen;
+  #
+  # build lookup table
+  @seen{@excluded} = ();
+  #
+  foreach (@backup_dirs_temp) {
+    push(@backup_dirs, $_) unless exists $seen{$_};
+  }
+}
+#
+print "User directories to backup: @backup_dirs\n\n" if ($options{"v"});
+#
+# main loop
+#
+my @pids;                       # array with child processes pids
+my $num_dirs = $#backup_dirs+1; # Total number of directories to back up
+my $dircounter = 0;             # Number of directories already saved
+my $nps = 0;            # Number of simultaneous running processes
+my $closed_dirs = 0;    # Number of directories successfully backed up
+#
+print "Number of directories to backup: $num_dirs\n" if ($options{"v"});
+print "Remote Server IP :: $remote_server\n" if ($options{"v"});
+#
+while (1) {
+  #
+  if ($nps < $cpus && $dircounter < $num_dirs) {
+    #
+    # launch process
+    #
+    my $dirname = shift(@backup_dirs);
+    #
+    print "Working with directory $dirname \n" if ($options{"v"});
+    #
+    my $origdirname = $backupdir."/".$dirname;
+    my $savedirname = 'root@'.$remote_server.'::'.$savebackupdir."/".$dirname;
+    my $options_rdiff = q(--exclude-special-files --exclude '**Cache' --exclude '**core' --exclude '**tmp' --exclude '**temp' --exclude '**cache');
+    $options_rdiff = ' -v5 '.$options_rdiff if  ($options{"v"});
+    #
+    defined($pids[$dircounter] = fork) or die "Cannot fork: $!";
+    #
+    unless ($pids[$dircounter]) {
+      # Child process is here
+      print "Child process $$\n " if ($options{"v"});
+      print "$$ : Launching rdiff-backup $savedirname\n " if ($options{"v"});
+      #
+      if ($options{"l"}) {	# list increments
+        exec "echo $dirname > /tmp/backup_${pproc}_$dirname;rdiff-backup --list-increments  $savedirname >> /tmp/backup_${pproc}_$dirname";
+	#        exec "echo \"rdiff-backup --list-increments  $savedirname\"";
+        #
+      } elsif ($options{"s"}) {	# list increment sizes
+        exec "echo $dirname > /tmp/backup_${pproc}_$dirname;rdiff-backup --list-increment-sizes  $savedirname >> /tmp/backup_${pproc}_$dirname";
+        #        exec "echo \"rdiff-backup --list-increments  root\@$remoteserver::$savedirname\"";
+      } else {
+	#
+	# remove older copies
+	if ($options{"T"}) {
+	  # remove older than $days_last_copy files forced by user 
+	  exec "rdiff-backup --force --remove-older-than $days_last_copy $savedirname";
+	} else {
+	  # remove every 30th changes older than $days_last_copy to avoid overgrowth and then update
+	  exec "rdiff-backup --force --remove-older-than $days_last_copy $savedirname; rdiff-backup --max-file-size $max_size $options_rdiff $origdirname $savedirname" if ($day == 30);
+	}
+	#
+        # update
+        exec "rdiff-backup --max-file-size $max_size $options_rdiff $origdirname $savedirname";
+      }
+    } else {
+      # Parent process is here
+      $nps++;
+      $dircounter++;
+    }
+    print "process launched: $nps $num_dirs $dircounter $#backup_dirs\n"  if ($options{"v"});
+  }
+  #
+  # Non-Blocking waitpid
+  my $kidpid = waitpid(-1,WNOHANG);
+  if ($kidpid) {
+    print "child process ended :: waitpid: $kidpid $closed_dirs\n"  if ($options{"v"});
+    $nps--;
+    last if (++$closed_dirs == $num_dirs);
+  }
+}
+#######  List or size output 
+if ($options{"l"} || $options{"s"}) {
+  my @backup_output = glob ("/tmp/backup_${pproc}_*");
+  @backup_output = sort @backup_output;
+  foreach (@backup_output) {
+    print "-------- > $_\n" if ($options{"v"});
+    system "cat $_";
+    unlink $_;
+  }
+}
+#####
+#
+print "Users rdiff-backup process ended. Sayonara baby... \n" if ($options{"v"});
+=head1 NAME
+
+rdiff-backup_user_accounts - Multiprocessor aware Perl launcher for rdiff-backup.
+
+=head1 VERSION
+
+This documentation refers to rdiff-backup_user_accounts version $Revision: 1.19 $.
+
+=head1 SYNOPSIS
+
+Perl script to launch an rdiff-backup of cluster user accounts. Multiprocessor version.
+
+ rdiff-backup_user_accounts -P path -R server_IP backupdir
+
+=head1 REQUIRED ARGUMENTS
+
+=over
+
+=item B<backupdir> 
+
+directory whose folders will be backed up.
+
+=back
+
+
+=head1 OPTIONS
+
+=over
+
+=item B<-R remote_server_IP>
+
+remote server IP address.
+
+
+=item B<-P PATH>
+
+remote server PATH to the directory where copies are kept.
+
+=item B<-C ncpus>
+
+Launch B<ncpus> process simultaneously.
+
+
+=item B<-M max_size>
+
+maximum size in bytes of files backed up [DEFAULT max_size = 350000000 (350MB)]
+
+=item B<-T ndays>
+
+ndays is the number of days of the older changes kept  [DEFAULT max_ndays = 400D]
+
+=item B<-u user>
+
+apply changes only to user.
+
+
+=item B<-v>
+
+Increase verbosity.
+
+
+=item B<-s>
+
+list increment sizes. Beware, takes time...
+
+
+=item B<-l>
+
+list increments.
+
+=item B<-h>
+
+Display help message and exit.
+
+=back
+
+=head1 DESCRIPTION
+
+Keep an incremental backup copy of a the set of subdirectories of a given directory in a remote server directory. The directory copies are handled by rdiff-backup. Multiprocessor aware program.
+
+
+=head1 DIAGNOSTICS
+
+List of error and warning messages
+
+=head1 CONFIGURATION AND ENVIRONMENT
+
+
+
+=head1 DEPENDENCIES
+
+
+
+=head1 INCOMPATIBILITIES
+
+
+
+=head1 BUGS AND LIMITATIONS
+
+There are no known bugs in this app.
+Please report problems to Curro Perez-Bernal  <franpebe@gmail.com>
+Patches are welcome.
+
+=head1 AUTHOR
+
+by Currix TM    <franpebe@gmail.com>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (c) 2012 Curro Perez-Bernal (<franpebe@gmail.com>). All rights reserved.
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself. See L<perlartistic>.
+ 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
