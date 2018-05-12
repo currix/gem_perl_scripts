@@ -1,7 +1,10 @@
 #!/usr/bin/perl
 #
 # Perl script to backup with rdiff-backup the CLGEM user accounts
-# ###################### Needs to redo the calling for -l case? or -l -u?
+# ###
+################### Needs to redo the calling for -l case? or -l -u?
+# ###
+#
 # by Currix TM
 #
 use strict;
@@ -13,8 +16,6 @@ use Getopt::Std;
 #
 use Mail::Mailer; # Warning if remote directory is not accessible
 #
-#my $prginfo = 'rdiff-backup_user_accounts,v 1.19 2014/01/09 18:48:26 curro Exp curro $'; # switched to git at Jan 09 2014
-my $prginfo = 'rdiff-backup_user_accounts ';
 # Switches:
 my %options;
 getopts("vhlsu:C:P:R:T:M:",\%options);
@@ -40,8 +41,8 @@ my $usemessage = <<"EOF";
 
 EOF
 #
-die "\tPerl script to launch an rdiff-backup of cluster user accounts. Multiprocessor version.\n
-     by Currix TM\n\nRCSINFO: $prginfo\n\n$usemessage" if ($options{"h"});
+die "\tPerl script to launch an rdiff-backup of cluster user accounts. Multiprocessor version.\n\n
+     Program homepage :: https://github.com/currix/gem_perl_scripts/tree/rdbackup\n\n\t by Currix TM\n\n$prgname\n\n$usemessage" if ($options{"h"});
 #
 # Check backup dir argument
 # Backup paths
@@ -250,7 +251,7 @@ rdiff-backup_user_accounts - Multiprocessor aware Perl launcher for rdiff-backup
 
 =head1 VERSION
 
-This documentation refers to rdiff-backup_user_accounts version $Revision: 1.19 $.
+This documentation refers to rdiff-backup_user_accounts version Version 1.0.
 
 =head1 SYNOPSIS
 
@@ -331,7 +332,9 @@ List of error and warning messages
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
+Program homepage 
 
+https://github.com/currix/gem_perl_scripts/tree/rdbackup
 
 =head1 DEPENDENCIES
 
@@ -353,11 +356,15 @@ by Currix TM    <franpebe@gmail.com>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2012 Curro Perez-Bernal (<franpebe@gmail.com>). All rights reserved.
+Copyright (c) 2012-2018 Curro Perez-Bernal (<franpebe@gmail.com>). All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
  
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 3 of the
+License, or (at your option) any later version.
+ 
+The full text of the GPL is given in /usr/share/common-licenses/GPL or
+in the FSF website http://www.gnu.org/copyleft/gpl.html.
