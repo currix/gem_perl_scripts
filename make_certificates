@@ -294,7 +294,7 @@ if ($options{"b"}) {
 #
 my $separator = ";";
 if ($options{"c"}) {
-    $bgfilename = $options{"c"}
+    $separator = $options{"c"}
 }
 ##########################################################
 my $output_file;
@@ -318,7 +318,7 @@ my $running_letter = "0";
 while (<INFILE>) {
     #
     chomp($_);
-    my @dataline = split /;/, $_;
+    my @dataline = split /$separator/, $_;
     print "processing @dataline\n" if ($options{"v"});
     #
     # Include section (or not...) Beware of $%$%&·$%$ accents...
