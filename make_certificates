@@ -1,0 +1,375 @@
+#!/usr/bin/perl
+# 
+# Prepare Rabida certificates
+#
+# by Currix TM.
+#
+use strict;
+use warnings;
+#
+use Getopt::Std;
+# Switches:
+my %options;
+getopts("ho:c:b:v",\%options);
+#
+(my $prgname) = $0 =~ m#.*/(.+$)#;
+#
+my $usemessage = <<"EOF";
+
+ Usage: $prgname [-v] [-o latex_file_name] [-c character] [-b backgroundfilename] datafile.csv
+        $prgname [-h]
+
+ Options:
+          h : help message
+          v : verbose output
+          c : character to split the csv. Default: ":"
+          b : background file name. Default: "background.png"
+          o : latex filename (default datafile.tex)
+
+
+EOF
+#
+die "\tPerl script to prepare the Rabida meeting tags.\n
+     by Currix TM\n\n$usemessage" if ($options{"h"});
+#
+my $latex_header = <<"EOF";
+\\documentclass[16pt]{scrartcl}
+\\usepackage[a4paper,left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\\usepackage{pdflscape,setspace,amsmath,amssymb}
+\\usepackage[latin1]{inputenc}
+\\usepackage[T1]{fontenc}
+\\usepackage{calligra}
+\\usepackage{tgschola}
+\\usepackage{fourier-orns}
+\\usepackage{graphicx}
+\\usepackage{wallpaper}
+\\usepackage[normalem]{ulem}
+\\usepackage{charter}
+\\usepackage{microtype}
+\\usepackage{bookmark}
+\\hyphenpenalty 100000
+\\input Zallman.fd
+\\newcommand*\\initfamily{\\usefont{U}{Zallman}{xl}{n}}
+\\def\\signature#1#2{\\parbox[b]{1in}{\\smash{#1}\\vskip12pt}
+\\hfill \\parbox[t]{2.8in}{\\shortstack{\\vrule width 2.8in height 0.4pt\\\\\\small#2}}}
+\\def\\sigskip{\\vskip0.4in plus 0.1in}
+        \\def\\beginskip{\\vskip0.5875in plus 0.1in}
+\\definecolor{title}{RGB}{180,0,0}
+\\definecolor{other}{RGB}{171,0,255}
+\\definecolor{name}{RGB}{255,0,0}
+\\definecolor{phd}{RGB}{0,0,240}
+\\begin{document}
+EOF
+#
+my $page_header = <<"EOF";
+\\linespread{2}\\selectfont
+\\pagestyle{empty}
+\\TileWallPaper{1\\paperwidth}{1\\paperheight}{BBBBB}
+\\noindent
+\\begin{flushright}
+  \\begin{minipage}[r]{10cm}
+    {\\centering
+      {\\onehalfspacing
+        {\\Large\\bfseries {\\color{phd}{{ International Scientific Meeting on Nuclear Physics}}}}\\\\%\\initfamily
+        \\vskip0.4em
+        {\\large Basic Concepts in Nuclear Physics: theory, experiments, and applications\\\\}
+        {\\texttt{\\color{phd}{http://institucional.us.es/rabida}}}}\\\\
+      \\par}
+  \\end{minipage}
+\\end{flushright}
+\\vskip0.5em
+
+EOF
+#
+my $body_participation = <<"EOF";
+\\begin{minipage}[l]{1.5in}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[c]{6.5in}
+{\\centering
+{\\onehalfspacing
+    {\\Large\\bfseries \\color{title}{Certificate of Participation}}\\par
+    \\vskip0.5em
+    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+    \\par}}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[r]{1.5in}
+\\end{minipage}
+\\vskip1.8em
+
+\\begin{minipage}[c]{16.5cm}
+La R\\'abida, June 22\$^{nd}\$, 2018.
+
+{\\doublespacing 
+On behalf of the Organizing Committee, I hereby certificate that \\uuline{{\\MakeUppercase{XXXX}}}
+has successfully participated in the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
+June 18\$^{\\text{th}}\$ to June 22\$^{\\text{nd}}\$ 2018.}
+\\end{minipage}
+
+\\noindent
+%\\beginskip
+{\\singlespacing
+\\vfil
+\\begin{minipage}[r]{2.8in}
+\\sigskip \\signature{}{Prof.\\ J.E.\\ Garc\\'{\\i}a-Ramos\\\\ Chairman of the Organizing Committee }
+\\end{minipage}}
+%=============================
+\\pagebreak
+EOF
+#    
+my $body_payment = <<"EOF";
+\\begin{minipage}[l]{1.5in}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[c]{6.5in}
+{\\centering
+{\\onehalfspacing
+    {\\Large\\bfseries \\color{title}{Payment Certificate}}\\par
+    \\vskip0.5em
+    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+    \\par}}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[r]{1.5in}
+\\end{minipage}
+\\vskip1.8em
+
+\\begin{minipage}[c]{16.5cm}
+La R\\'abida, June 22\$^{nd}\$, 2018.
+
+{\\doublespacing 
+On behalf of the Organizing Committee, I confirm that we have received a payment of \\uuline{{\\MakeUppercase{WWWW}}} Euros from \\uuline{{\\MakeUppercase{XXXX}}}, to cover the fee of the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
+June 18\$^{\\text{th}}\$ to June 22\$^{\\text{nd}}\$ 2018.}
+\\end{minipage}
+
+\\noindent
+%\\beginskip
+{\\singlespacing
+\\vfil
+\\begin{minipage}[r]{2.8in}
+\\sigskip \\signature{}{Prof.\\ J.E.\\ Garc\\'{\\i}a-Ramos\\\\ Chairman of the Organizing Committee }
+\\end{minipage}}
+%=============================
+\\pagebreak
+EOF
+my $body_grant = <<"EOF";
+
+\\begin{minipage}[l]{1.5in}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[c]{6.5in}
+{\\centering
+{\\onehalfspacing
+    {\\Large\\bfseries \\color{title}{Grant Certificate}}\\par
+    \\vskip0.5em
+    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+    \\par}}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[r]{1.5in}
+\\end{minipage}
+\\vskip1.8em
+
+\\begin{minipage}[c]{16.5cm}
+La R\\'abida, June 22\$^{nd}\$, 2018.
+
+{\\doublespacing 
+On behalf of the Organizing Committee, I hereby certificate that \\uuline{{\\MakeUppercase{XXXX}}},
+has received a grant of \\uuline{{\\MakeUppercase{ZZZZ}}} Euros to cover partially his expenses at the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
+June 18\$^{\\text{th}}\$ to June 22\$^{\\text{nd}}\$ 2018.}
+\\end{minipage}
+
+\\noindent
+%\\beginskip
+{\\singlespacing
+\\vfil
+\\begin{minipage}[r]{2.8in}
+\\sigskip \\signature{}{Prof.\\ J.E.\\ Garc\\'{\\i}a-Ramos\\\\ Chairman of the Organizing Committee }
+\\end{minipage}}
+%=============================
+\\pagebreak
+EOF
+my $body_talk = <<"EOF";
+\\begin{minipage}[l]{1.5in}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[c]{6.5in}
+{\\centering
+{\\onehalfspacing
+    {\\Large\\bfseries \\color{title}{Certificate of Participation}}\\par
+    \\vskip0.5em
+    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+    \\par}}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[r]{1.5in}
+\\end{minipage}
+\\vskip1.0em
+
+\\begin{minipage}[c]{16.5cm}
+La R\\'abida, June 22\$^{nd}\$, 2018.
+
+{\\doublespacing 
+On behalf of the Organizing Committee, I hereby certificate that \\uuline{{\\MakeUppercase{XXXX}}}
+has participated in the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
+June 18\$^{\\text{th}}\$ to June 22\$^{\\text{nd}}\$ 2018; and has given a seminar at this meeting entitled
+
+\\color{phd}{{{\\MakeUppercase{YYYY}}.}}}
+\\end{minipage}
+
+\\noindent
+%\\beginskip
+{\\singlespacing
+\\vfil
+\\begin{minipage}[r]{2.8in}
+\\sigskip \\signature{}{Prof.\\ J.E.\\ Garc\\'{\\i}a-Ramos\\\\ Chairman of the Organizing Committee }
+\\end{minipage}}
+%=============================
+\\pagebreak
+EOF
+#
+my $body_poster = <<"EOF";
+\\begin{minipage}[l]{1.5in}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[c]{6.5in}
+{\\centering
+{\\onehalfspacing
+    {\\Large\\bfseries \\color{title}{Certificate of Participation}}\\par
+    \\vskip0.5em
+    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+    \\par}}
+\\end{minipage}
+\\hfill
+\\begin{minipage}[r]{1.5in}
+\\end{minipage}
+\\vskip1.0em
+
+\\begin{minipage}[c]{16.5cm}
+La R\\'abida, June 22\$^{nd}\$, 2018.
+
+{\\doublespacing 
+On behalf of the Organizing Committee, I hereby certificate that \\uuline{{\\MakeUppercase{XXXX}}}
+has participated in the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
+June 18\$^{\\text{th}}\$ to June 22\$^{\\text{nd}}\$ 2018; and has presented a poster at this meeting entitled
+
+\\color{phd}{{{\\MakeUppercase{YYYY}}.}}}
+\\end{minipage}
+
+\\noindent
+%\\beginskip
+{\\singlespacing
+\\vfil
+\\begin{minipage}[r]{2.8in}
+\\sigskip \\signature{}{Prof.\\ J.E.\\ Garc\\'{\\i}a-Ramos\\\\ Chairman of the Organizing Committee }
+\\end{minipage}}
+%=============================
+\\pagebreak
+EOF
+#
+my $latex_section = <<"EOF";
+\\section{Section:: AAAA}
+\\pagebreak
+EOF
+#
+my $latex_footer = <<"EOF";
+
+\\end{document}
+EOF
+#
+#
+# Assign arguments to variables...
+my $input_file;
+if ($#ARGV < 0 ) {
+  die "$usemessage";
+} else {
+  $input_file = shift @ARGV;
+}
+#
+my $bgfilename = "background.png";
+if ($options{"b"}) {
+    $bgfilename = $options{"b"}
+}
+#
+my $separator = ";";
+if ($options{"c"}) {
+    $bgfilename = $options{"c"}
+}
+##########################################################
+my $output_file;
+if ($options{"o"}) {
+  $output_file = $options{"o"};
+} else {
+  ($output_file = $input_file) =~ s/\..*$/.tex/;
+}
+#
+open INFILE, "<$input_file" or die "Cannot open input file $input_file";
+open OUTFILE, ">$output_file" or die "Cannot open output file $output_file";
+#
+# print header
+print OUTFILE "$latex_header";
+#
+# Include background
+$page_header =~ s/BBBBB/$bgfilename/;
+#
+# main loop
+my $running_letter = "0";
+while (<INFILE>) {
+    #
+    chomp($_);
+    my @dataline = split /;/, $_;
+    print "processing @dataline\n" if ($options{"v"});
+    #
+    # Include section (or not...) Beware of $%$%&·$%$ accents...
+    my $first_letter = substr($dataline[1], 0, 1);
+    if ($first_letter ne $running_letter) {
+      $running_letter = $first_letter;
+      my $current_section = $latex_section;
+      $current_section =~ s/AAAA/$running_letter/;
+      print OUTFILE "$current_section";
+    }
+    #
+    # Participation
+    my $page = $page_header.$body_participation;
+    $page =~ s/XXXX/$dataline[0] $dataline[1]/;
+    print OUTFILE "$page";
+    #
+    # Payment
+    if ($dataline[2] ne "NO") {
+	$page = $page_header.$body_payment;
+	$page =~ s/XXXX/$dataline[0] $dataline[1]/;
+	$page =~ s/WWWW/$dataline[2]/;  
+	print OUTFILE "$page";
+    }
+    #
+    # Grant
+    if ($dataline[3] ne "NO") {
+	$page = $page_header.$body_grant;
+	$page =~ s/XXXX/$dataline[0] $dataline[1]/;
+	$page =~ s/ZZZZ/$dataline[3]/;  
+	print OUTFILE "$page";
+    }
+    #
+    # Talk
+    if ($dataline[4] ne "NO") {
+	$page = $page_header.$body_talk;
+	$page =~ s/XXXX/$dataline[0] $dataline[1]/;
+	$page =~ s/YYYY/$dataline[4]/;  
+	print OUTFILE "$page";
+    }
+    #
+    # Poster
+    if ($dataline[5] ne "NO") {
+	$page = $page_header.$body_poster;
+	$page =~ s/XXXX/$dataline[0] $dataline[1]/;
+	$page =~ s/YYYY/$dataline[5]/;  
+	print OUTFILE "$page";
+    }
+}
+#
+# print footer
+print OUTFILE "$latex_footer";
+#
+close(OUTFILE);
+#

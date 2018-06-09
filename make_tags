@@ -1,0 +1,135 @@
+#!/usr/bin/perl
+# 
+# Prepare Rabida tags
+# by Currix TM.
+#
+use strict;
+use warnings;
+#
+use Getopt::Std;
+# Switches:
+my %options;
+getopts("ho:c:b:v",\%options);
+#
+(my $prgname) = $0 =~ m#.*/(.+$)#;
+#
+my $usemessage = <<"EOF";
+
+ Usage: $0 [-v] [-o latex_file_name] [-c character] [-b backgroundfilename] datafile.csv
+        $0 [-h]
+
+ Options:
+          h : help message
+          v : verbose output
+          c : character to split the csv. Default: ":"
+          b : background file name. Default: "background.png"
+          o : latex filename (default datafile.tex)
+
+
+EOF
+#
+die "\tPerl script to prepare the Rabida meeting tags.\n
+     by Currix TM\n\n$usemessage" if ($options{"h"});
+#
+my $latex_header = <<"EOF";
+\\documentclass[12pt,a4paper,landscape]{article}
+%
+\\usepackage{graphicx} % Makes the command \\includegraphics available
+%
+\\usepackage[latin1]{inputenc}
+%
+\\usepackage[newdimens]{labels}
+\\LabelCols=2% Number of columns of labels per page
+\\LabelRows=2% Number of rows of labels per page
+\\LeftPageMargin=7mm% These four parameters give the
+\\RightPageMargin=7mm% page gutter sizes. The outer edges of
+\\TopPageMargin=15mm% the outer labels are the specified
+\\BottomPageMargin=15mm% distances from the edge of the paper.
+\\InterLabelColumn=1.5mm% Gap between columns of labels\\begin{document}
+\\InterLabelRow=0mm% Gap between rows of labels
+\\LeftLabelBorder=5mm% These four parameters give the extra
+\\RightLabelBorder=5mm% space used around the text on each
+\\TopLabelBorder=5mm% actual label.
+\\BottomLabelBorder=5mm%
+\\renewcommand{\\familydefault}{\\sfdefault}
+\\begin{document}
+EOF
+#
+my $latex_footer = <<"EOF";
+
+\\end{document}
+EOF
+#
+my $cell_template = <<"EOF";
+\\genericlabel{%
+  \\fbox{
+    \\begin{minipage}{9.2cm}
+      \\begin{center}
+        \\includegraphics[width=9.2cm]{WWWW}
+        { \\begin{tabular}{c}
+            \\textbf{\\large XXXX}\\\\
+            \\\\
+            \\emph{YYYY}\\\\
+            \\\\
+            {\\large ZZZZ}\\\\
+          \\end{tabular}
+        }
+      \\end{center}
+    \\end{minipage}
+  }
+}
+EOF
+#
+# Assign arguments to variables...
+my $input_file;
+if ($#ARGV < 0 ) {
+  die "$usemessage";
+} else {
+  $input_file = shift @ARGV;
+}
+#
+my $bgfilename = "background.png";
+if ($options{"b"}) {
+    $bgfilename = $options{"b"}
+}
+#
+my $separator = ":";
+if ($options{"c"}) {
+    $separator = $options{"c"}
+}
+##########################################################
+my $output_file;
+if ($options{"o"}) {
+  $output_file = $options{"o"};
+} else {
+  ($output_file = $input_file) =~ s/\..*$/.tex/;
+}
+#
+open INFILE, "<$input_file" or die "Cannot open input file $input_file";
+open OUTFILE, ">$output_file" or die "Cannot open output file $output_file";
+#
+# print header
+print OUTFILE "$latex_header";
+#
+# Include background
+$cell_template =~ s/WWWW/$bgfilename/; 
+#
+# main loop
+while (<INFILE>) {
+  #
+  my @dataline = split /$separator/, $_;
+  print "processing @dataline" if ($options{"v"});
+  #
+  my $tag = $cell_template;
+  $tag =~ s/XXXX/$dataline[0] $dataline[1]/;
+  $tag =~ s/YYYY/$dataline[2]/;
+  $tag =~ s/ZZZZ/$dataline[3]/;
+  #
+  print OUTFILE "$tag";
+}
+#
+# print footer
+print OUTFILE "$latex_footer";
+#
+close(OUTFILE);
+#
