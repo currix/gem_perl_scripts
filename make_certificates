@@ -48,8 +48,6 @@ my $latex_header = <<"EOF";
 \\usepackage{microtype}
 \\usepackage{bookmark}
 \\hyphenpenalty 100000
-\\input Zallman.fd
-\\newcommand*\\initfamily{\\usefont{U}{Zallman}{xl}{n}}
 \\def\\signature#1#2{\\parbox[b]{1in}{\\smash{#1}\\vskip12pt}
 \\hfill \\parbox[t]{2.8in}{\\shortstack{\\vrule width 2.8in height 0.4pt\\\\\\small#2}}}
 \\def\\sigskip{\\vskip0.4in plus 0.1in}
@@ -59,12 +57,12 @@ my $latex_header = <<"EOF";
 \\definecolor{name}{RGB}{255,0,0}
 \\definecolor{phd}{RGB}{0,0,240}
 \\begin{document}
+\\pagestyle{empty}
+\\TileWallPaper{1\\paperwidth}{1\\paperheight}{BBBBB}
 EOF
 #
 my $page_header = <<"EOF";
 \\linespread{2}\\selectfont
-\\pagestyle{empty}
-\\TileWallPaper{1\\paperwidth}{1\\paperheight}{BBBBB}
 \\noindent
 \\begin{flushright}
   \\begin{minipage}[r]{10cm}
@@ -163,7 +161,7 @@ my $body_grant = <<"EOF";
 {\\onehalfspacing
     {\\Large\\bfseries \\color{title}{Grant Certificate}}\\par
     \\vskip0.5em
-    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+   {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
     \\par}}
 \\end{minipage}
 \\hfill
@@ -307,11 +305,11 @@ if ($options{"o"}) {
 open INFILE, "<$input_file" or die "Cannot open input file $input_file";
 open OUTFILE, ">$output_file" or die "Cannot open output file $output_file";
 #
+# Include background
+$latex_header =~ s/BBBBB/$bgfilename/;
+#
 # print header
 print OUTFILE "$latex_header";
-#
-# Include background
-$page_header =~ s/BBBBB/$bgfilename/;
 #
 # main loop
 my $running_letter = "0";
