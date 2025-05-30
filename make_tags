@@ -69,7 +69,7 @@ my $cell_template = <<"EOF";
         { \\begin{tabular}{c}
             \\textbf{\\large XXXX}\\\\
             \\\\
-            \\emph{YYYY}\\\\
+            \\emph{\\large YYYY}\\\\
             \\\\
             {\\large ZZZZ}\\\\
           \\end{tabular}
