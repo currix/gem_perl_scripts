@@ -36,7 +36,7 @@ my $latex_header = <<"EOF";
 %
 \\usepackage{graphicx} % Makes the command \\includegraphics available
 %
-\\usepackage[latin1]{inputenc}
+\\usepackage[utf8]{inputenc}
 %
 \\usepackage[newdimens]{labels}
 \\LabelCols=2% Number of columns of labels per page
