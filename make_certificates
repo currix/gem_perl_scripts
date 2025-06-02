@@ -29,7 +29,7 @@ my $usemessage = <<"EOF";
 
 EOF
 #
-die "\tPerl script to prepare the Rabida meeting tags.\n
+die "\tPerl script to prepare the Rabida meeting certificates.\n
      by Currix TM\n\n$usemessage" if ($options{"h"});
 #
 my $latex_header = <<"EOF";
