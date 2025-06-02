@@ -36,7 +36,7 @@ my $latex_header = <<"EOF";
 \\documentclass[16pt]{scrartcl}
 \\usepackage[a4paper,left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 \\usepackage{pdflscape,setspace,amsmath,amssymb}
-\\usepackage[latin1]{inputenc}
+\\usepackage[utf8]{inputenc}
 \\usepackage[T1]{fontenc}
 \\usepackage{calligra}
 \\usepackage{tgschola}
