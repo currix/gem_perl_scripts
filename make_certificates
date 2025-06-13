@@ -97,12 +97,12 @@ my $body_participation = <<"EOF";
 \\vskip1.8em
 
 \\begin{minipage}[c]{16.5cm}
-La R\\'abida, June 22\$^{nd}\$, 2018.
+La R\\'abida, June 20, 2025.
 
 {\\doublespacing 
 On behalf of the Organizing Committee, I hereby certificate that \\uuline{{\\MakeUppercase{XXXX}}}
 has successfully participated in the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
-June 18\$^{\\text{th}}\$ to June 22\$^{\\text{nd}}\$ 2018.}
+ June 16 to 20, 2025.}
 \\end{minipage}
 
 \\noindent
@@ -134,11 +134,11 @@ my $body_payment = <<"EOF";
 \\vskip1.8em
 
 \\begin{minipage}[c]{16.5cm}
-La R\\'abida, June 22\$^{nd}\$, 2018.
+La R\\'abida, June 20, 2025.
 
 {\\doublespacing 
 On behalf of the Organizing Committee, I confirm that we have received a payment of \\uuline{{\\MakeUppercase{WWWW}}} Euros from \\uuline{{\\MakeUppercase{XXXX}}}, to cover the fee of the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
-June 18\$^{\\text{th}}\$ to June 22\$^{\\text{nd}}\$ 2018.}
+ June 16 to 20, 2025.}
 \\end{minipage}
 
 \\noindent
@@ -170,12 +170,13 @@ my $body_grant = <<"EOF";
 \\vskip1.8em
 
 \\begin{minipage}[c]{16.5cm}
-La R\\'abida, June 22\$^{nd}\$, 2018.
+La R\\'abida, June 20, 2025.
+
 
 {\\doublespacing 
 On behalf of the Organizing Committee, I hereby certificate that \\uuline{{\\MakeUppercase{XXXX}}},
-has received a grant of \\uuline{{\\MakeUppercase{ZZZZ}}} Euros to cover partially his expenses at the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
-June 18\$^{\\text{th}}\$ to June 22\$^{\\text{nd}}\$ 2018.}
+has received a grant of \\uuline{{\\MakeUppercase{ZZZZ}}} Euros to cover partially his expenses at the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN) from
+ June 16 to 20, 2025.}
 \\end{minipage}
 
 \\noindent
@@ -206,12 +207,13 @@ my $body_talk = <<"EOF";
 \\vskip1.0em
 
 \\begin{minipage}[c]{16.5cm}
-La R\\'abida, June 22\$^{nd}\$, 2018.
+La R\\'abida, June 20, 2025.
+
 
 {\\doublespacing 
 On behalf of the Organizing Committee, I hereby certificate that \\uuline{{\\MakeUppercase{XXXX}}}
 has participated in the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
-June 18\$^{\\text{th}}\$ to June 22\$^{\\text{nd}}\$ 2018; and has given a seminar at this meeting entitled
+ June 16 to 20, 2025; and has given a seminar at this meeting entitled
 
 \\color{phd}{{{\\MakeUppercase{YYYY}}.}}}
 \\end{minipage}
@@ -245,12 +247,12 @@ my $body_poster = <<"EOF";
 \\vskip1.0em
 
 \\begin{minipage}[c]{16.5cm}
-La R\\'abida, June 22\$^{nd}\$, 2018.
+La R\\'abida, June 20, 2025.
 
 {\\doublespacing 
 On behalf of the Organizing Committee, I hereby certificate that \\uuline{{\\MakeUppercase{XXXX}}}
-has participated in the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
-June 18\$^{\\text{th}}\$ to June 22\$^{\\text{nd}}\$ 2018; and has presented a poster at this meeting entitled
+has participated in the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)   from
+ June 16 to 20, 2025; and has presented a poster at this meeting entitled
 
 \\color{phd}{{{\\MakeUppercase{YYYY}}.}}}
 \\end{minipage}
@@ -289,6 +291,7 @@ my $bgfilename = "background.png";
 if ($options{"b"}) {
     $bgfilename = $options{"b"}
 }
+
 #
 my $separator = ";";
 if ($options{"c"}) {
