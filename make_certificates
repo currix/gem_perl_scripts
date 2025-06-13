@@ -86,8 +86,8 @@ my $body_participation = <<"EOF";
 {\\centering
 {\\onehalfspacing
     {\\Large\\bfseries \\color{title}{Certificate of Participation}}\\par
-    \\vskip0.5em
-    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+%    \\vskip0.5em
+%    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
     \\par}}
 \\end{minipage}
 \\hfill
@@ -109,6 +109,7 @@ has successfully participated in the \\emph{\\color{phd}{International Scientifi
 {\\singlespacing
 \\vfil
 \\begin{minipage}[r]{2.8in}
+\\includegraphics[width=0.65\\textwidth]{Rabida_2025/firma.pdf}
 \\sigskip \\signature{}{Prof.\\ J.E.\\ Garc\\'{\\i}a-Ramos\\\\ Chairman of the Organizing Committee }
 \\end{minipage}}
 %=============================
@@ -123,8 +124,8 @@ my $body_payment = <<"EOF";
 {\\centering
 {\\onehalfspacing
     {\\Large\\bfseries \\color{title}{Payment Certificate}}\\par
-    \\vskip0.5em
-    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+%    \\vskip0.5em
+%    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
     \\par}}
 \\end{minipage}
 \\hfill
@@ -145,6 +146,7 @@ On behalf of the Organizing Committee, I confirm that we have received a payment
 {\\singlespacing
 \\vfil
 \\begin{minipage}[r]{2.8in}
+\\includegraphics[width=0.65\\textwidth]{Rabida_2025/firma.pdf}
 \\sigskip \\signature{}{Prof.\\ J.E.\\ Garc\\'{\\i}a-Ramos\\\\ Chairman of the Organizing Committee }
 \\end{minipage}}
 %=============================
@@ -159,8 +161,8 @@ my $body_grant = <<"EOF";
 {\\centering
 {\\onehalfspacing
     {\\Large\\bfseries \\color{title}{Grant Certificate}}\\par
-    \\vskip0.5em
-   {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+%    \\vskip0.5em
+%   {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
     \\par}}
 \\end{minipage}
 \\hfill
@@ -183,6 +185,7 @@ has received a grant of \\uuline{{\\MakeUppercase{ZZZZ}}} Euros to cover partial
 {\\singlespacing
 \\vfil
 \\begin{minipage}[r]{2.8in}
+\\includegraphics[width=0.65\\textwidth]{Rabida_2025/firma.pdf}
 \\sigskip \\signature{}{Prof.\\ J.E.\\ Garc\\'{\\i}a-Ramos\\\\ Chairman of the Organizing Committee }
 \\end{minipage}}
 %=============================
@@ -196,8 +199,8 @@ my $body_talk = <<"EOF";
 {\\centering
 {\\onehalfspacing
     {\\Large\\bfseries \\color{title}{Certificate of Participation}}\\par
-    \\vskip0.5em
-    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+%    \\vskip0.5em
+%    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
     \\par}}
 \\end{minipage}
 \\hfill
@@ -213,7 +216,6 @@ La R\\'abida, June 20, 2025.
 On behalf of the Organizing Committee, I hereby certificate that \\uuline{{\\MakeUppercase{XXXX}}}
 has participated in the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)  from
  June 16 to 20, 2025; and has given a seminar at this meeting entitled
-
 \\color{phd}{{{\\MakeUppercase{YYYY}}.}}}
 \\end{minipage}
 
@@ -222,6 +224,7 @@ has participated in the \\emph{\\color{phd}{International Scientific Meeting on 
 {\\singlespacing
 \\vfil
 \\begin{minipage}[r]{2.8in}
+\\includegraphics[width=0.65\\textwidth]{Rabida_2025/firma.pdf}
 \\sigskip \\signature{}{Prof.\\ J.E.\\ Garc\\'{\\i}a-Ramos\\\\ Chairman of the Organizing Committee }
 \\end{minipage}}
 %=============================
@@ -236,8 +239,8 @@ my $body_poster = <<"EOF";
 {\\centering
 {\\onehalfspacing
     {\\Large\\bfseries \\color{title}{Certificate of Participation}}\\par
-    \\vskip0.5em
-    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
+%    \\vskip0.5em
+%    {\\color{pink}\\Large\\decofourleft\\quad{\\color{blue}\\decoone}\\quad\\decofourright}
     \\par}}
 \\end{minipage}
 \\hfill
@@ -252,7 +255,6 @@ La R\\'abida, June 20, 2025.
 On behalf of the Organizing Committee, I hereby certificate that \\uuline{{\\MakeUppercase{XXXX}}}
 has participated in the \\emph{\\color{phd}{International Scientific Meeting on Nuclear Physics: Basic Concepts in Nuclear Physics: theory, experiments, and applications}} held at La R\\'abida (Huelva, SPAIN)   from
  June 16 to 20, 2025; and has presented a poster at this meeting entitled
-
 \\color{phd}{{{\\MakeUppercase{YYYY}}.}}}
 \\end{minipage}
 
@@ -261,6 +263,7 @@ has participated in the \\emph{\\color{phd}{International Scientific Meeting on 
 {\\singlespacing
 \\vfil
 \\begin{minipage}[r]{2.8in}
+\\includegraphics[width=0.65\\textwidth]{Rabida_2025/firma.pdf}
 \\sigskip \\signature{}{Prof.\\ J.E.\\ Garc\\'{\\i}a-Ramos\\\\ Chairman of the Organizing Committee }
 \\end{minipage}}
 %=============================
