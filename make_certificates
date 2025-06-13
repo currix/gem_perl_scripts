@@ -60,7 +60,7 @@ my $latex_header = <<"EOF";
 \\TileWallPaper{1\\paperwidth}{1\\paperheight}{BBBBB}
 EOF
 #
-my $page_header = <<"EOF";
+my $page_header_old = <<"EOF";
 \\linespread{2}\\selectfont
 \\noindent
 \\begin{flushright}
@@ -75,6 +75,21 @@ my $page_header = <<"EOF";
   \\end{minipage}
 \\end{flushright}
 \\vskip0.5em
+
+EOF
+my $page_header = <<"EOF";
+\\linespread{2}\\selectfont
+\\noindent
+\\begin{flushright}
+  \\begin{minipage}[r]{10cm}
+    {\\centering
+      {\\onehalfspacing
+        {\\Large\\bfseries {\\color{phd}{{ Basic Concepts in Nuclear Physics: theory, experiments, and applications}}}}\\\\%\\initfamily
+        {\\texttt{\\color{phd}{http://institucional.us.es/rabida}}}}\\\\
+      \\par}
+  \\end{minipage}
+\\end{flushright}
+\\vskip0.25em
 
 EOF
 #
@@ -168,7 +183,7 @@ my $body_grant = <<"EOF";
 \\hfill
 \\begin{minipage}[r]{1.5in}
 \\end{minipage}
-\\vskip0.2em
+%\\vskip0.2em
 
 \\begin{minipage}[c]{16.5cm}
 La R\\'abida, June 20, 2025.
@@ -206,7 +221,7 @@ my $body_talk = <<"EOF";
 \\hfill
 \\begin{minipage}[r]{1.5in}
 \\end{minipage}
-\\vskip0.2em
+%\\vskip0.2em
 
 \\begin{minipage}[c]{16.5cm}
 La R\\'abida, June 20, 2025.
@@ -246,7 +261,7 @@ my $body_poster = <<"EOF";
 \\hfill
 \\begin{minipage}[r]{1.5in}
 \\end{minipage}
-\\vskip0.2em
+%\\vskip0.2em
 
 \\begin{minipage}[c]{16.5cm}
 La R\\'abida, June 20, 2025.
