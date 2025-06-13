@@ -93,7 +93,7 @@ my $body_participation = <<"EOF";
 \\hfill
 \\begin{minipage}[r]{1.5in}
 \\end{minipage}
-\\vskip1.8em
+\\vskip0.2em
 
 \\begin{minipage}[c]{16.5cm}
 La R\\'abida, June 20, 2025.
@@ -131,7 +131,7 @@ my $body_payment = <<"EOF";
 \\hfill
 \\begin{minipage}[r]{1.5in}
 \\end{minipage}
-\\vskip1.8em
+\\vskip0.2em
 
 \\begin{minipage}[c]{16.5cm}
 La R\\'abida, June 20, 2025.
@@ -168,7 +168,7 @@ my $body_grant = <<"EOF";
 \\hfill
 \\begin{minipage}[r]{1.5in}
 \\end{minipage}
-\\vskip1.8em
+\\vskip0.2em
 
 \\begin{minipage}[c]{16.5cm}
 La R\\'abida, June 20, 2025.
@@ -193,7 +193,7 @@ has received a grant of \\uuline{{\\MakeUppercase{ZZZZ}}} Euros to cover partial
 EOF
 my $body_talk = <<"EOF";
 \\begin{minipage}[l]{1.5in}
-\\end{minipage}
+\\end{minipage}	
 \\hfill
 \\begin{minipage}[c]{6.5in}
 {\\centering
@@ -206,7 +206,7 @@ my $body_talk = <<"EOF";
 \\hfill
 \\begin{minipage}[r]{1.5in}
 \\end{minipage}
-\\vskip1.0em
+\\vskip0.2em
 
 \\begin{minipage}[c]{16.5cm}
 La R\\'abida, June 20, 2025.
@@ -246,7 +246,7 @@ my $body_poster = <<"EOF";
 \\hfill
 \\begin{minipage}[r]{1.5in}
 \\end{minipage}
-\\vskip1.0em
+\\vskip0.2em
 
 \\begin{minipage}[c]{16.5cm}
 La R\\'abida, June 20, 2025.
