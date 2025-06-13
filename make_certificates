@@ -16,7 +16,7 @@ getopts("ho:c:b:v",\%options);
 #
 my $usemessage = <<"EOF";
 
- Usage: $prgname [-v] [-o latex_file_name] [-c character] [-b backgroundfilename] datafile.csv
+ Usage: $prgname [-v] [-c character] [-b backgroundfilename] datafile.csv
         $prgname [-h]
 
  Options:
@@ -24,12 +24,11 @@ my $usemessage = <<"EOF";
           v : verbose output
           c : character to split the csv. Default: ":"
           b : background file name. Default: "background.png"
-          o : latex filename (default datafile.tex)
 
 
 EOF
 #
-die "\tPerl script to prepare the Rabida meeting certificates.\n
+die "\tPerl script to prepare the Rabida meeting certificates. There are as many files as participants, with names certs_<surname>.tex.\n
      by Currix TM\n\n$usemessage" if ($options{"h"});
 #
 my $latex_header = <<"EOF";
@@ -299,37 +298,27 @@ if ($options{"c"}) {
 }
 ##########################################################
 my $output_file;
-if ($options{"o"}) {
-  $output_file = $options{"o"};
-} else {
-  ($output_file = $input_file) =~ s/\..*$/.tex/;
-}
 #
 open INFILE, "<$input_file" or die "Cannot open input file $input_file";
-open OUTFILE, ">$output_file" or die "Cannot open output file $output_file";
 #
 # Include background
 $latex_header =~ s/BBBBB/$bgfilename/;
 #
-# print header
-print OUTFILE "$latex_header";
 #
 # main loop
-my $running_letter = "0";
 while (<INFILE>) {
     #
     chomp($_);
     my @dataline = split /$separator/, $_;
     print "processing @dataline\n" if ($options{"v"});
     #
-    # Include section (or not...) Beware of $%$%&·$%$ accents...
-    my $first_letter = substr($dataline[1], 0, 1);
-    if ($first_letter ne $running_letter) {
-      $running_letter = $first_letter;
-      my $current_section = $latex_section;
-      $current_section =~ s/AAAA/$running_letter/;
-      print OUTFILE "$current_section";
-    }
+    # Open OUTFILE
+    $output_file = $dataline[1];
+    $output_file =~ tr/ /_/s;
+    $output_file = "certs_".uc($output_file).".tex";
+    open OUTFILE, ">$output_file" or die "Cannot open output file $output_file";
+    # print header
+    print OUTFILE "$latex_header";
     #
     # Participation
     my $page = $page_header.$body_participation;
@@ -367,10 +356,10 @@ while (<INFILE>) {
 	$page =~ s/YYYY/$dataline[5]/;  
 	print OUTFILE "$page";
     }
+    # print footer
+    print OUTFILE "$latex_footer";
+    #
+    close(OUTFILE);
 }
 #
-# print footer
-print OUTFILE "$latex_footer";
-#
-close(OUTFILE);
 #
